@@ -74,7 +74,7 @@ export default function Home() {
     // actual function to record
     navigator.mediaDevices.getUserMedia(constraints).then(onSucess, onError);
   } else {
-    alert("User media device is not supported");
+    console.error("User media device is not supported");
   }
 
   return (
