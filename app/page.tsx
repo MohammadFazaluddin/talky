@@ -66,7 +66,7 @@ export default function Home() {
     };
   };
 
-  const onError = function (err: any) {
+  const onError = function (err: DOMException | Error) {
     alert("There was an error, Error: " + err);
   };
 
