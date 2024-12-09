@@ -6,72 +6,76 @@ export default function Home() {
   const recordBtnRef = useRef<HTMLButtonElement>(null);
   const audioSecRef = useRef<HTMLElement>(null);
 
-  const constraints = { audio: true };
-  let audioChunck: BlobPart[] = [];
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    const constraints = { audio: true };
+    let audioChunck: BlobPart[] = [];
 
-  const onSucess = function (stream: MediaStream) {
-    const mediaRecorder = new MediaRecorder(stream);
+    const onSucess = function (stream: MediaStream) {
+      const mediaRecorder = new MediaRecorder(stream);
 
-    recordBtnRef.current!.onclick = startRecording;
-
-    function startRecording() {
-      mediaRecorder.start();
-      recordBtnRef.current!.innerText = "Recording...";
-      recordBtnRef.current!.style.backgroundColor = "red";
-
-      recordBtnRef.current!.onclick = stopRecord;
-    }
-
-    function stopRecord() {
-      mediaRecorder.stop();
-
-      recordBtnRef.current!.innerText = "Start";
-      recordBtnRef.current!.style.backgroundColor = "white";
       recordBtnRef.current!.onclick = startRecording;
-    }
 
-    mediaRecorder.ondataavailable = function (e: BlobEvent) {
-      audioChunck.push(e.data);
-    };
+      function startRecording() {
+        mediaRecorder.start();
+        recordBtnRef.current!.innerText = "Recording...";
+        recordBtnRef.current!.style.backgroundColor = "red";
 
-    mediaRecorder.onstop = async function () {
-      audioSecRef.current!.innerText = "Transcribing...";
-      const container = document.createElement("article");
-      const audio = document.createElement("audio");
-
-      audio.setAttribute("controls", "");
-
-      container.appendChild(audio);
-
-      audio.controls = true;
-      const blob = new Blob(audioChunck, { type: mediaRecorder.mimeType });
-
-      const blobUrl = window.URL.createObjectURL(blob);
-      audio.src = blobUrl;
-      audioChunck = [];
-
-      const text = await GetTranscribedText(blob);
-
-      audioSecRef.current!.innerHTML = "";
-      const transcribe = document.createElement("div");
-      
-      if (text) {
-        transcribe.innerText = "Transcription: " + text;
-      } else {
-        transcribe.innerText = "An error occured";
+        recordBtnRef.current!.onclick = stopRecord;
       }
 
-      audioSecRef.current?.append(transcribe);
-      audioSecRef.current?.appendChild(container);
+      function stopRecord() {
+        mediaRecorder.stop();
+
+        recordBtnRef.current!.innerText = "Start";
+        recordBtnRef.current!.style.backgroundColor = "white";
+        recordBtnRef.current!.onclick = startRecording;
+      }
+
+      mediaRecorder.ondataavailable = function (e: BlobEvent) {
+        audioChunck.push(e.data);
+      };
+
+      mediaRecorder.onstop = async function () {
+        audioSecRef.current!.innerText = "Transcribing...";
+        const container = document.createElement("article");
+        const audio = document.createElement("audio");
+
+        audio.setAttribute("controls", "");
+
+        container.appendChild(audio);
+
+        audio.controls = true;
+        const blob = new Blob(audioChunck, { type: mediaRecorder.mimeType });
+
+        const blobUrl = window.URL.createObjectURL(blob);
+        audio.src = blobUrl;
+        audioChunck = [];
+
+        const text = await GetTranscribedText(blob);
+
+        audioSecRef.current!.innerHTML = "";
+        const transcribe = document.createElement("div");
+
+        if (text) {
+          transcribe.innerText = "Transcription: " + text;
+        } else {
+          transcribe.innerText = "An error occured";
+        }
+
+        audioSecRef.current?.append(transcribe);
+        audioSecRef.current?.appendChild(container);
+      };
     };
-  };
 
-  const onError = function (err: DOMException | Error) {
-    alert("There was an error, Error: " + err);
-  };
+    const onError = function (err: DOMException | Error) {
+      alert("There was an error, Error: " + err);
+    };
 
-  // actual function to record
-  navigator.mediaDevices.getUserMedia(constraints).then(onSucess, onError);
+    // actual function to record
+    navigator.mediaDevices.getUserMedia(constraints).then(onSucess, onError);
+  } else {
+    alert("User media device is not supported");
+  }
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
