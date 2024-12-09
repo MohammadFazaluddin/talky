@@ -1,9 +1,6 @@
 "use client";
 import { GetTranscribedText } from "@/service/whisperservice";
-import axios from "axios";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { start } from "repl";
+import {  useRef  } from "react";
 
 export default function Home() {
   const recordBtnRef = useRef<HTMLButtonElement>(null);
@@ -12,7 +9,7 @@ export default function Home() {
   const constraints = { audio: true };
   let audioChunck: BlobPart[] = [];
 
-  let onSucess = function (stream: MediaStream) {
+  const onSucess = function (stream: MediaStream) {
     const mediaRecorder = new MediaRecorder(stream);
 
     recordBtnRef.current!.onclick = startRecording;
@@ -37,7 +34,7 @@ export default function Home() {
       audioChunck.push(e.data);
     };
 
-    mediaRecorder.onstop = async function (e) {
+    mediaRecorder.onstop = async function () {
       audioSecRef.current!.innerText = "Transcribing...";
       const container = document.createElement("article");
       const audio = document.createElement("audio");
@@ -69,7 +66,7 @@ export default function Home() {
     };
   };
 
-  let onError = function (err: any) {
+  const onError = function (err: any) {
     alert("There was an error, Error: " + err);
   };
 
